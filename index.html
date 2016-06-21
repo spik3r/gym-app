@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width,        initial-scale=1.0">
+	<link rel='stylesheet' href='style.css'/>
+	<script src='script.js'>
+	</script>
+	<script src="//code.jquery.com/jquery-1.10.2.js"></script>
+	<script src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
+</head>
+<div class="header">
+<h1>Workout Log</h1>
+</div>
+
+<div class="row">
+<div class="col-4 col-m-4 menu">
+<ul>
+<form ng-submit="workoutAdd()">
+<li><input required type="text" ng-model="exerciseInput"  placeholder="Add Exercise" id="tags" ng-keyup="complete()"></li>
+<li><input required type="text" ng-model="repsInput"  placeholder="Add Reps"></li>
+<li><input required type="text" ng-model="weightInput"  placeholder="Add Weight"></li>
+<li><input type="submit" value="Add New"></li>
+<li><input type=button ng-click="remove()" value="Remove marked"></li>
+<li> <input type=button ng-click="archive()"value="Remove all workouts!"></li>
+</form>
+</ul>
+</div>
+
+<div class="col-6 col-m-9">
+<h1>The Workout Log</h1>
+<p>Eventually there will be some workouts logged here; although don't expect to see many leg days.</p>
+
+<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+<body ng-app="myApp" ng-controller="workoutCtrl">
+
+<h2>My Workout Log</h2>
+
+    <table>
+  <tr ng-repeat="x in workoutLog track by $index">
+    <td> <input type="checkbox" ng-model="x.done"> </td>
+    <td ng-bind="x.exerciseText"> {{ x.exerciseText }} </td>
+    <td ng-bind="x.repsText"> {{ x.repsText }} </td>
+    <td ng-bind="x.weightText"> {{ x.weightText }} </td>
+    <td>{{ x.count + " Sets"}}</td>
+    <td> <button ng-click="clickAdd(x)">Add Set!</button> </td>
+
+    <td> <button ng-disabled="x.buttonDisabled" ng-click="clickRemove(x)">Remove Set!</button> </td>
+
+  </tr>
+</table>
+<script>
+var app = angular.module('myApp', []);
+
+
+app.controller('workoutCtrl', function($scope) {
+    //_________________
+
+    $scope.availableTags = [
+      "Bench Press",
+      "Incline Bench Press",
+      "Decline Bench Press",
+      "Dumbbell Press",
+      "Dumbbell Curl",
+      "Barbell Press",
+      "Barbell Curl",
+      "Tricep Pulldowns",
+      "Tricep Pulldowns Overhead",
+      "Tricep Pushdowns",
+      "Squats",
+      "Deadlifts",
+      "Clean & Press",
+      "Leg Press",
+      "Leg Extensions",
+      "Leg Curls",
+      "Dips",
+      "Chin Ups",
+      "Push Ups",
+      "Sit Ups",
+      "Crunches",
+      "Weighted Cabled Crunches",
+      "Ab Crunch Machine",
+      "Assisted Dips",
+      "Assisted Chin Ups",
+      "Chest Press",
+      "Shoulder Press",
+      "Rows",
+      "Cable Fly"
+    ];
+    $scope.complete=function(){
+    $( "#tags" ).autocomplete({
+      source: $scope.availableTags
+    });
+    }
+    //_________________
+
+    $scope.count = 1;
+    $scope.saved = localStorage.getItem('todos');
+    $scope.workoutLog = (localStorage.getItem('todos')!==null) ? JSON.parse($scope.saved) : [{exerciseText:'Example Exercise', repsText:'20 Reps', weightText:'12.5 KG', setCountText:'Sets: 2',done:false}];
+    $scope.date;
+    console.log($scope.workoutLog);
+
+    $scope.setDate = function() {
+        $scope.date = new Date();
+    }
+
+    $scope.workoutAdd = function() {
+        $scope.workoutLog.push({exerciseText:$scope.exerciseInput, repsText:$scope.repsInput + " Reps", weightText:$scope.weightInput + " KG", count:$scope.count , done:false, buttonDisabled:false, });
+
+        $scope.exerciseInput = "";
+        $scope.repsInput = "";
+        $scope.weightInput = "";
+
+        localStorage.setItem('todos', JSON.stringify($scope.workoutLog));
+        console.log(localStorage.getItem('todos'));
+
+    };
+
+    $scope.remove = function() {
+        var oldList = $scope.workoutLog;
+        $scope.workoutLog = [];
+        angular.forEach(oldList, function(x) {
+            if (!x.done) $scope.workoutLog.push(x);
+        });
+        localStorage.setItem('todos', JSON.stringify($scope.workoutLog));
+    };
+
+    $scope.clickAdd = function(item){
+    console.log('here');
+    console.log(item);
+      item.count = item.count + 1;
+      $scope.toggleRemoveSetButton(item);
+      console.log(localStorage.getItem('todos'));
+    };
+
+    $scope.clickRemove = function(item){
+    console.log('there');
+      console.log(item);
+      item.count = item.count - 1;
+      $scope.toggleRemoveSetButton(item);
+    };
+
+    $scope.toggleRemoveSetButton = function(item){
+      if(item.count < 1){
+        item.buttonDisabled = true;
+      }else{
+        item.buttonDisabled = false;
+      }
+    };
+
+    $scope.checkCount = function() {
+        if (count > 1) {
+      $scope.buttonEnabled = true;
+    }
+        else {
+      return false;
+  }
+};
+
+$scope.archive = function() {
+    $scope.workoutLog = [];
+    localStorage.setItem('todos', JSON.stringify([]));
+  };
+
+});
+
+function TodoController ($scope) {
+
+  $scope.saved = localStorage.getItem('todos');
+  $scope.todos = (localStorage.getItem('todos')!==null) ? JSON.parse($scope.saved) : [ {text: 'Learn AngularJS', done: false}, {text: 'Build an Angular app', done: false} ];
+  localStorage.setItem('todos', JSON.stringify($scope.todos));
+
+  $scope.addTodo = function() {
+    $scope.todos.push({
+      text: $scope.todoText,
+      done: false
+    });
+    $scope.todoText = ''; //clear the input after adding
+    localStorage.setItem('todos', JSON.stringify($scope.todos));
+  };
+
+  $scope.remaining = function() {
+    var count = 0;
+    angular.forEach($scope.todos, function(todo){
+      count+= todo.done ? 0 : 1;
+    });
+    return count;
+  };
+
+  $scope.archive = function() {
+    var oldTodos = $scope.todos;
+    $scope.todos = [];
+    angular.forEach(oldTodos, function(todo){
+      if (!todo.done)
+        $scope.todos.push(todo);
+    });
+    localStorage.setItem('todos', JSON.stringify($scope.todos));
+  };
+}
+</script>
+
+</div>
+
+<div class="col-m-12">
+<div class="aside">
+<h2>Do you even lift?</h2>
+<p>Bro science for life!</p>
+<p>Shock the muscles!</p>
+</div>
+</div>
+
+</div>
+
+<div class="footer">
+<p>copyright kaitait.com</p>
+</div>
+
+</body>
+</html>
